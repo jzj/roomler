@@ -43,7 +43,6 @@ const nuxtConfig = {
     '@/plugins/axios',
     '@/plugins/consola.client',
     '@/plugins/consola.server',
-    '@/plugins/axios',
     '@/plugins/icons',
     '@/plugins/janus.client',
     '@/plugins/ws.client'
