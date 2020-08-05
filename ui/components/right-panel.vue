@@ -22,7 +22,7 @@
           <v-icon small>
             fa-users
           </v-icon>
-          ROOM PEERS
+          <span style="font-weight: right">ROOM PEERS</span>
         </v-list-item-title>
         <v-btn
           icon
@@ -163,16 +163,5 @@ export default {
   }
   * >>> .v-badge--bordered .v-badge__badge::after {
     border-width: 1px;
-  }
-  * >>> ::-webkit-scrollbar {
-    width: 7px;
-  }
-  * >>> ::-webkit-scrollbar-track {
-    background: white;
-  }
-  * >>> ::-webkit-scrollbar-thumb {
-    background-color: black ;
-    border-radius: 3px;
-    border: 1px solid white;
   }
 </style>

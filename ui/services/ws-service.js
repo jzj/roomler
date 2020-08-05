@@ -9,11 +9,12 @@ import TrackingService from './tracking-service'
 // 2 - CLOSING - The connection is in the process of closing.
 // 3 - CLOSED - The connection is closed or couldn't be opened.
 class WsService {
-  constructor (host, store) {
+  constructor (host, store, router) {
     this.trackingService = new TrackingService(store)
     this.counter = 0 // used as reconnect counter
     this.host = host
     this.store = store
+    this.router = router
     this.subscriptions = {
       onopen: [],
       onclose: [],
@@ -44,7 +45,7 @@ class WsService {
     }
     this.ws = new WebSocket(`${this.host}`)
 
-    this.ws.onopen = (event) => {
+    this.ws.onopen = async (event) => {
       consola.info(`WebSocket opened: ${event}`)
 
       // update device information
@@ -57,9 +58,9 @@ class WsService {
         self.ws.send(self.messages.pop())
       }
 
-      if (self.counter > 0 && cookies.get('token')) {
+      if (self.counter >= 0 && cookies.get('token')) {
         if (self.store.state.api.auth.user && self.store.state.api.auth.user._id) {
-          self.store.dispatch('api/auth/me')
+          await self.store.dispatch('api/auth/me')
             .then(() => {
               return Promise.all([
                 self.store.dispatch('api/invite/acceptPendingInvites'),
@@ -72,9 +73,9 @@ class WsService {
                 self.store.dispatch('api/auth/getPeers')
               ])
             })
-            .then((data) => {
-              if (data && data[0] && data[0].result) {
-                return Promise.all([self.store.dispatch('api/room/calls/getAll'), ...data[0].result.map(room => self.store.dispatch('api/message/getAll', { room }))])
+            .then(() => {
+              if (self.router.currentRoute.params && self.router.currentRoute.params.room) {
+                self.store.commit('api/room/setRoom', self.store.getters['api/room/selectedRoom'](self.router.currentRoute.params.room), { root: true })
               }
             })
         }
