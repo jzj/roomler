@@ -28,7 +28,7 @@
         >
           <v-timeline-item
             v-for="message in messages[propertyName]"
-            :id="'message_item_' + getMessageId(message)"
+            :id="`${elemId}_item_${getMessageId(message)}`"
             :key="getMessageId(message)"
             :icon="!getUser(message.author) || !getUser(message.author).avatar_url ? 'fa-user' : undefined"
             data-type="message_item"
@@ -282,7 +282,7 @@ export default {
             self.scrollMessages(self.scroll === scrollDirection.bottom)
           }
           self.scroll = scrollDirection.bottom
-        }, 300)
+        }, 500)
       })
     },
     isChatPanel (newVal) {
@@ -301,7 +301,10 @@ export default {
   },
 
   async mounted () {
-    this.scrollMessages(true)
+    const self = this
+    this.$nextTick(() => {
+      self.scrollMessages(true, 300)
+    })
     await this.readUnreads()
   },
 
@@ -355,13 +358,16 @@ export default {
     getMessageId (message) {
       return message._id || message.client_id
     },
-    scrollMessages (bottom = true) {
-      const messagesList = this.$refs[this.elemId]
-      if (messagesList) {
-        const newScrollTop = bottom ? messagesList.scrollHeight : messagesList.scrollTop + 10
-        messagesList.scrollTop = newScrollTop
-        this.$vuetify.goTo(`#${this.inputId}`)
-      }
+    scrollMessages (bottom = true, wait = 100) {
+      const self = this
+      setTimeout(() => {
+        const messagesList = self.$refs[self.elemId]
+        if (messagesList) {
+          const newScrollTop = bottom ? messagesList.scrollHeight : messagesList.scrollTop + 10
+          messagesList.scrollTop = newScrollTop
+          self.$vuetify.goTo(`#${self.inputId}`)
+        }
+      }, wait)
     },
     noScroll () {
       this.scroll = scrollDirection.noScroll
@@ -390,26 +396,27 @@ export default {
     },
     async readUnreads () {
       const self = this
-      if (this.unreads && document.hasFocus()) {
+
+      if (self.unreads && document.hasFocus()) {
         const messagesInView = []
-        this.unreads.forEach((message) => {
+        self.unreads.forEach((message) => {
           const messageList = document.getElementById(self.elemId)
-          const messageItem = document.getElementById(`message_item_${self.getMessageId(message)}`)
+          const messageItem = document.getElementById(`${self.elemId}_item_${self.getMessageId(message)}`)
           const inView = domUtils.isScrolledIntoView(messageItem)
           if (messageList && messageItem && inView) {
             messagesInView.push(message._id)
           }
         })
         if (messagesInView && messagesInView.length) {
-          this.scroll = scrollDirection.noScroll
-          await this.$store.dispatch('api/message/readby/pushAll', messagesInView)
+          self.scroll = scrollDirection.noScroll
+          await self.$store.dispatch('api/message/readby/pushAll', messagesInView)
         }
       }
     },
     async sendMessage (content, message) {
       if (content && content !== '<p></p>') {
         const $ = cheerio.load(content)
-        const mentions = [...new Set($('button[data-username]').toArray().map(node => node.attribs.userkey))]
+        const mentions = [...new Set($('a[data-username]').toArray().map(node => node.attribs.userkey))]
         const files = [...new Set($('a[data-upload]').toArray().map((node) => {
           return {
             filename: node.attribs.filename,

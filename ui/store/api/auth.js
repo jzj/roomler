@@ -43,9 +43,9 @@ export const mutations = {
     connections.forEach((connection) => {
       const user = state.peers.find(u => u._id === connection.user)
       if (user) {
-        const uconn = user.connections.find(uc => uc._id === connection._id)
+        const uconn = user.connections.find(uc => uc === connection._id)
         if (!uconn) {
-          user.connections.push(connection)
+          user.connections.push(connection._id)
         }
       } else {
         this.$consola.info(`user ${connection.user} not found in ${JSON.stringify(state.peers)}`)
@@ -56,7 +56,7 @@ export const mutations = {
     connections.forEach((connection) => {
       const user = state.peers.find(u => u._id === connection.user)
       if (user) {
-        user.connections = user.connections.filter(uc => uc._id !== connection._id)
+        user.connections = user.connections.filter(uc => uc !== connection._id)
       } else {
         this.$consola.info(`user ${connection.user} not found in ${JSON.stringify(state.peers)}`)
       }
@@ -271,6 +271,21 @@ export const actions = {
       handleError(err, commit)
     }
     return response
+  },
+
+  async getAll ({
+    commit
+  }, ids) {
+    const response = {}
+    try {
+      response.result = await this.$axios.$post('/api/auth/getAll', { ids })
+      response.result.forEach((u) => {
+        commit('push', u)
+      })
+    } catch (err) {
+      handleError(err, commit)
+    }
+    return response
   }
 }
 
@@ -285,7 +300,7 @@ export const getters = {
     return state.oauth ? state.oauth.avatar_url : (state.user ? state.user.avatar_url : null)
   },
   getUser: state => (userid) => {
-    return state.peers.find(u => u._id === userid)
+    return state.peers.find(u => u._id === userid) || { username: 'N/A', avatar_url: null }
   },
   getUsers: state => (userids) => {
     return state.peers.filter(u => userids.includes(u._id))

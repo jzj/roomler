@@ -1,3 +1,4 @@
+const userService = require('../../services/user/user-service')
 const roomService = require('../../services/room/room-service')
 const callService = require('../../services/call/call-service')
 const messageService = require('../../services/message/message-service')
@@ -14,12 +15,16 @@ class RoomController {
   async getAll (request, reply) {
     const userid = request.user.user._id
     const rooms = await roomService.getAll(userid, request.query.page, request.query.size)
+    const ids = rooms
+      .map(r => [r.owner, ...r.members, ...r.moderators])
+      .reduce((a, b) => [...a, ...b], [])
+    const peers = await userService.getAll({ ids })
     const calls = rooms.map(r => r.calls).reduce((a, b) => a.concat(b), [])
     const messages = []
 
     const lists = await Promise.all([
       callService.getAll({ ids: calls, status: 'open' }),
-      ...rooms.map(r => messageService.getAll(userid, 0, 25, { room: r._id })
+      ...rooms.map(r => messageService.getAll(userid, 0, 10, { room: r._id })
       )])
     for (let i = 0; i < rooms.length; i++) {
       messages.push({
@@ -27,7 +32,26 @@ class RoomController {
         messages: lists[i + 1] // 0th position are calls, then come the room messages
       })
     }
+    // if messages contain info about ex peers (removed from the room)
+    // then download user info for those ex peers
+    const roomPeers = peers.map(u => u._id.toString())
+    const messagePeers = [...new Set(
+      messages
+        .map(m => m.messages)
+        .reduce((a, b) => [...a, ...b], [])
+        .map(message => [message.author.toString(), ...message.mentions.map(u => u.toString()), ...message.reactions.map(r => r.user.toString())])
+        .reduce((a, b) => [...a, ...b], []))]
+
+    const exPeers = messagePeers.filter(p => !roomPeers.includes(p))
+    if (exPeers.length) {
+      const users = await userService.getAll({ ids: exPeers })
+      users.forEach((u) => {
+        peers.push(u)
+      })
+    }
+
     const result = {
+      peers,
       rooms,
       messages,
       calls: lists[0]
