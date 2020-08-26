@@ -10,7 +10,14 @@ export const state = () => ({
 
   reportsLoading: true,
   reports: [],
-  reportsCount: 0
+  reportsCount: 0,
+
+  countries: [],
+  os: [],
+  browsers: [],
+  pages: [],
+  refs: [],
+  users: []
 })
 
 const simplifyUrl = (visit, url) => {
@@ -41,6 +48,13 @@ export const mutations = {
     })
     state.reports = reports.data
     state.reportsCount = reports.count
+
+    state.countries = reports.countries
+    state.os = reports.os
+    state.browsers = reports.browsers
+    state.pages = reports.pages
+    state.refs = reports.refs
+    state.users = reports.users
   },
   push (state, visit) {
     const url = this.state.api.config.config.appSettings.env.URL

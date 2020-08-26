@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const Call = require('../../models/call')
 const CallFilter = require('./call-filter')
+const CallReportsFilter = require('./call-reports-filter')
 
 class CallService {
   // base methods - START
@@ -19,6 +20,20 @@ class CallService {
     return record
   }
 
+  async getReports (filter, group) {
+    const aggregate = new CallReportsFilter(filter).getAggregate()
+    let records = await Call
+      .aggregate(aggregate)
+      .collation({ locale: 'en', strength: 2 })
+      .allowDiskUse(true)
+      .exec()
+    records = records.map((r) => {
+      r.count = r.count && r.count.length ? r.count[0].count : 0
+      return r
+    })[0]
+    return records
+  }
+
   async create (userid, data) {
     data.room = mongoose.Types.ObjectId(data.room)
     if (userid) {
@@ -26,6 +41,9 @@ class CallService {
     }
     let record = new Call(data)
     record = await record.save()
+      .then(r =>
+        r.populate({ path: 'userObj', select: '_id username' })
+          .execPopulate())
     return record
   }
 
@@ -39,6 +57,7 @@ class CallService {
     }
     const record = await Call
       .findOneAndUpdate(callFilter, update, options)
+      .populate({ path: 'userObj', select: '_id username' })
     return record
   }
 

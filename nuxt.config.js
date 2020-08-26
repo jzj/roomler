@@ -69,6 +69,19 @@ const nuxtConfig = {
       sendHitTask: isProd
     }
   },
+  workbox: {
+    offlineAnalytics: true,
+    dev: isDev,
+    config: {
+      debug: isDev
+    },
+    importScripts: [
+      'custom-sw.js'
+    ],
+    preCaching: [
+      'precache.js'
+    ]
+  },
   vuetify: {
     customVariables: ['~/assets/variables.scss'],
     treeShake: true,

@@ -309,6 +309,9 @@ TURN_PASSWORD=YOUR_TURN_PASSWORD
 GIPHY_API_KEY=YOUR_GIPHY_KEY
 GOOGLE_ANALYTICS_ID=YOUR_GOOGLE_ANALYTICS_ID
 SUPER_ADMIN_EMAILS='["your_super_admin_email@gmail.com"]'
+WEB_PUSH_CONTACT="mailto: your_contact_email@gmail.com"
+WEB_PUSH_PUBLISH_KEY=YOUR_WEB_PUSH_PUBLIC_KEY
+WEB_PUSH_PRIVATE_KEY=YOUR_WEB_PUSH_PRIVATE_KEY
 NUXT_TELEMETRY_DISABLED=1
 ```
 ### Requred Environment variables
@@ -319,7 +322,7 @@ NUXT_TELEMETRY_DISABLED=1
 - TURN_URL & TURN_USERNAME & TURN_PASSWORD e.g. turns:coturn.mydomain.com:443?transport=udp, username & password
 - (WS_SCALEOUT_ENABLED=1 & WS_SCALEOUT_HOST=redis) or WS_SCALEOUT_ENABLED=0
 - (SENDGRID_API_KEY) or (GMAIL_USER & GMAIL_PASSWORD) or (SMTP_HOST & SMTP_PORT & SMTP_SECURE & SMTP_USER & SMTP_PASSWORD)
-- SUPER_ADMIN_EMAILS - '["email_of_super_admin_user@gmail.com"]' is used to view routes `/admin/visits` and `/admin/reports`
+- SUPER_ADMIN_EMAILS - '["email_of_super_admin_user@gmail.com"]' is used to view routes `/admin/reports`
 
 **IMPORTANT**: If you don't provide OAUTH (Facebook, Google, LinkedIn, Github) ID/SECRET envs, you will still be able to have local registration (username/email/password), but OAUTH button in the `/@/auth/login` or `/@/auth/register` routes will throw an error. Also if you don't provide Giphy API KEY, adding giphys will throw an error.
 
@@ -373,8 +376,14 @@ TURN_PASSWORD=YOUR_TURN_PASSWORD
 GIPHY_API_KEY=YOUR_GIPHY_KEY
 GOOGLE_ANALYTICS_ID=YOUR_GOOGLE_ANALYTICS_ID
 SUPER_ADMIN_EMAILS='["your_super_admin_email@gmail.com"]'
+WEB_PUSH_CONTACT="mailto: your_contact_email@gmail.com"
+WEB_PUSH_PUBLISH_KEY=YOUR_WEB_PUSH_PUBLIC_KEY
+WEB_PUSH_PRIVATE_KEY=YOUR_WEB_PUSH_PRIVATE_KEY
 NUXT_TELEMETRY_DISABLED=1
 ```
+
+You can generate your VAPID keys (for push notifications):
+`./node_modules/.bin/web-push generate-vapid-keys`
 
 ## Start in development mode
 

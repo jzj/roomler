@@ -1,3 +1,4 @@
+const config = require('../../../config')
 class VisitFilter {
   constructor (filter) {
     this.aggregate = []
@@ -25,8 +26,12 @@ class VisitFilter {
     if (filter.status) {
       $match1.$and.push({ status: filter.status })
     }
-    if (filter.url) {
+    if (filter.url && !filter.room) {
       $match1.$and.push({ url: { $regex: `.*${filter.url}.*` } })
+    }
+    if (filter.room) {
+      const room = `^${config.appSettings.env.URL}/${filter.room}.*`
+      $match1.$and.push({ url: { $regex: `${room}` } })
     }
     if (filter.referrer) {
       $match1.$and.push({ referrer: { $regex: `.*${filter.referrer}.*` } })
@@ -43,6 +48,9 @@ class VisitFilter {
     }
     if (filter.country) {
       $match2.$and.push({ 'connection.geoip.country.code': filter.country })
+    }
+    if (filter.device) {
+      $match2.$and.push({ 'connection.device_id': filter.device })
     }
     const $lookup = {
       from: 'connections',
@@ -78,13 +86,24 @@ class VisitFilter {
       week: { $week: '$createdAt' },
       day: { $dayOfMonth: '$createdAt' },
       duration: {
-        $divide: [{ $subtract: ['$updatedAt', '$createdAt'] }, 1000]
+        $divide: [{ $subtract: ['$updatedAt', '$createdAt'] }, 1000 * 60]
       },
       page: {
         $arrayElemAt: [
           {
             $split: [
               '$url',
+              '?'
+            ]
+          },
+          0
+        ]
+      },
+      ref: {
+        $arrayElemAt: [
+          {
+            $split: [
+              '$referrer',
               '?'
             ]
           },
@@ -103,22 +122,22 @@ class VisitFilter {
         { $group: { _id: null, count: { $sum: 1 } } }
       ],
       countries: [
-        { $group: { _id: this.getGroupId(interval, '$geoip.country.code'), count: { $sum: 1 } } }
+        { $group: { _id: this.getGroupId(interval, '$connection.geoip.country.code'), count: { $sum: 1 }, duration: { $sum: '$duration' } } }
       ],
       users: [
-        { $group: { _id: this.getGroupId(interval, '$connection.user.username'), count: { $sum: 1 } } }
+        { $group: { _id: this.getGroupId(interval, '$connection.user.username'), count: { $sum: 1 }, duration: { $sum: '$duration' } } }
       ],
       os: [
-        { $group: { _id: this.getGroupId(interval, '$connection.os.name'), count: { $sum: 1 } } }
+        { $group: { _id: this.getGroupId(interval, '$connection.os.name'), count: { $sum: 1 }, duration: { $sum: '$duration' } } }
       ],
       browsers: [
-        { $group: { _id: this.getGroupId(interval, '$connection.browser.name'), count: { $sum: 1 } } }
+        { $group: { _id: this.getGroupId(interval, '$connection.browser.name'), count: { $sum: 1 }, duration: { $sum: '$duration' } } }
       ],
       pages: [
-        { $group: { _id: this.getGroupId(interval, '$page'), count: { $sum: 1 } } }
+        { $group: { _id: this.getGroupId(interval, '$page'), count: { $sum: 1 }, duration: { $sum: '$duration' } } }
       ],
-      referrers: [
-        { $group: { _id: this.getGroupId(interval, '$referrer'), count: { $sum: 1 } } }
+      refs: [
+        { $group: { _id: this.getGroupId(interval, '$ref'), count: { $sum: 1 }, duration: { $sum: '$duration' } } }
       ]
     }
     this.aggregate.push({ $facet })
