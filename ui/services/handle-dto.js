@@ -109,6 +109,18 @@ export class HandleDto {
       data: false,
       resolution: null
     }
+    this.sip = {
+      register: {
+        proxy: `sip:${sessionDto.user._id}@${sessionDto.asteriskUrl}`,
+        username: `sip:${sessionDto.user._id}@${sessionDto.asteriskUrl}`,
+        authuser: `${sessionDto.user._id}`,
+        secret: `${sessionDto.user.timestamp}`,
+        display_name: sessionDto.user.username
+      },
+      call: {
+        uri: `sip:${this.roomid}@${sessionDto.asteriskUrl}`
+      }
+    }
     this.simulcast = args.simulcast !== undefined ? args.simulcast : false
     this.iceRestart = args.iceRestart !== undefined ? args.iceRestart : true
     this.trickle = args.trickle !== undefined ? args.trickle : true

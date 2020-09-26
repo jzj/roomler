@@ -72,7 +72,7 @@ export const actions = {
     commit('api/janus/videoroom/updates/setId', { handleDto, id: msg.id, privateId: msg.private_id }, { root: true })
     commit('api/janus/videoroom/updates/setDisplay', { handleDto, display: msg.display }, { root: true })
     if (handleDto.media.audio.enabled || handleDto.media.video.enabled || handleDto.media.screen.enabled) {
-      dispatch('api/janus/handle/createOffer', { handleDto }, { root: true })
+      dispatch('api/janus/videoroom/handle/createOffer', { handleDto }, { root: true })
         .then(jsep => dispatch('api/janus/videoroom/api/configure', { handleDto, jsep }, { root: true }))
     }
   },
@@ -91,14 +91,14 @@ export const actions = {
       ptype: 'attendee',
       id
     }
-    dispatch('api/janus/handle/attachAttendee', { sessionDto: handleDto.sessionDto, args }, { root: true })
+    dispatch('api/janus/videoroom/handle/attachAttendee', { sessionDto: handleDto.sessionDto, args }, { root: true })
   },
   handleEvent ({
     commit,
     dispatch
   }, { handleDto, msg }) {
     this.$Janus.log('handleEvent')
-    const foundHandleDTO = handleDto.sessionDto.handleDtos.find(h => h.id === msg.id)
+    const foundHandleDTO = handleDto.sessionDto.videoroomHandles.find(h => h.id === msg.id)
     if (foundHandleDTO) {
       commit('api/janus/videoroom/updates/setDisplay', { handleDto: foundHandleDTO, display: msg.display }, { root: true })
     }
@@ -133,7 +133,7 @@ export const actions = {
           audioCodec,
           videoCodec
         }
-        dispatch('api/janus/handle/attachSubscriber', { sessionDto: handleDto.sessionDto, args }, { root: true })
+        dispatch('api/janus/videoroom/handle/attachSubscriber', { sessionDto: handleDto.sessionDto, args }, { root: true })
           .then(newHandleDTO => dispatch('api/janus/videoroom/api/joinSubscriber', { handleDto: newHandleDTO }, { root: true }))
       }
     }
@@ -155,7 +155,7 @@ export const actions = {
         ptype: 'attendee',
         id
       }
-      dispatch('api/janus/handle/attachAttendee', { sessionDto: handleDto.sessionDto, args }, { root: true })
+      dispatch('api/janus/videoroom/handle/attachAttendee', { sessionDto: handleDto.sessionDto, args }, { root: true })
     }
   },
 
@@ -166,7 +166,7 @@ export const actions = {
     const result = await dispatch('api/janus/videoroom/api/listparticipants', { handleDto }, { root: true })
     if (result.participants) {
       result.participants.forEach((p) => {
-        const handle = handleDto.sessionDto.handleDtos.find(h => h.id === p.id)
+        const handle = handleDto.sessionDto.videoroomHandles.find(h => h.id === p.id)
         if (handle) {
           commit('api/janus/videoroom/updates/setDisplay', { handleDto: handle, display: p.display }, { root: true })
         }
@@ -200,7 +200,7 @@ export const actions = {
           }
         }, { root: true })
     } else {
-      const foundHandleDTO = handleDto.sessionDto.handleDtos.find(h => h.id === unpublished)
+      const foundHandleDTO = handleDto.sessionDto.videoroomHandles.find(h => h.id === unpublished)
       if (foundHandleDTO) {
         commit('api/janus/videoroom/updates/clearStream', { handleDto: foundHandleDTO }, { root: true })
         commit('api/janus/videoroom/updates/setMedia',
@@ -250,10 +250,10 @@ export const actions = {
           }
         }, { root: true })
     } else {
-      const foundHandleDTO = handleDto.sessionDto.handleDtos.find(h => h.id === leaving)
+      const foundHandleDTO = handleDto.sessionDto.videoroomHandles.find(h => h.id === leaving)
       if (foundHandleDTO) {
-        await dispatch('api/janus/handle/detach', { handleDto: foundHandleDTO }, { root: true })
-        commit('api/janus/handle/pull', { sessionDto: foundHandleDTO.sessionDto, handleDto: foundHandleDTO }, { root: true })
+        await dispatch('api/janus/videoroom/handle/detach', { handleDto: foundHandleDTO }, { root: true })
+        commit('api/janus/videoroom/handle/pull', { sessionDto: foundHandleDTO.sessionDto, handleDto: foundHandleDTO }, { root: true })
       }
     }
   },
@@ -268,7 +268,7 @@ export const actions = {
       handleDto.handle.handleRemoteJsep({ jsep })
     } else {
       this.$Janus.log('createAnswer jsep')
-      dispatch('api/janus/handle/createAnswer', { handleDto, jsep }, { root: true })
+      dispatch('api/janus/videoroom/handle/createAnswer', { handleDto, jsep }, { root: true })
         .then(jsepObj => dispatch('api/janus/videoroom/api/start', { handleDto, jsep: jsepObj }, { root: true }))
     }
   },
