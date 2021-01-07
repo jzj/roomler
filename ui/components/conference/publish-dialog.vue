@@ -41,6 +41,7 @@
                       :dark="!isDark && !media.video.enabled"
                       :light="isDark && !media.video.enabled"
                       :style="stream? 'bottom: 24px' : ''"
+                      elevation="0"
                       v-on="on"
                       @click="media.video.enabled = !media.video.enabled"
                     >
@@ -68,6 +69,7 @@
                       :light="isDark && !media.audio.enabled"
                       :disabled="disableAudioChange"
                       :style="stream? 'bottom: 24px' : ''"
+                      elevation="0"
                       v-on="on"
                       @click="media.audio.enabled = !media.audio.enabled"
                     >
@@ -94,6 +96,7 @@
                       :dark="!isDark && !settings"
                       :light="isDark && !settings"
                       :style="stream? 'bottom: 24px' : ''"
+                      elevation="0"
                       v-on="on"
                       @click="settings = !settings"
                     >
@@ -185,6 +188,7 @@
         <v-btn
           color="grey"
           outlined
+          elevation="0"
           @click="cancel()"
         >
           {{ $t('comps.conference.cancel') }}
@@ -194,6 +198,7 @@
           color="primary"
           outlined
           :disabled="!isValid || !stream"
+          elevation="0"
           @click="publish()"
         >
           {{ $t('comps.conference.publish') }}

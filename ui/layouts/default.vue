@@ -34,8 +34,8 @@
           :to="localePath('index')"
           text
           tile
-          depressed
           class="pa-0"
+          elevation="0"
         >
           <span class="title">{{ title }}</span>
         </v-btn>
