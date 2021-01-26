@@ -28,10 +28,10 @@ RUN rm -rf /var/lib/apt/lists/* \
   python \
   git \
   && cd / \
-  && git clone https://github.com/gjovanov/roomler.git \
+  && git clone --depth=1 https://github.com/gjovanov/roomler.git \
   && cd /roomler \
-  && npm i \
-  && npm run build \
+  && npx lerna bootstrap --scope roomler.ui -- --production --no-optional \
+  && yarn run build \
 # Cleanup
   && cd / \
   && rm -Rf /tmp/* \
@@ -43,12 +43,12 @@ RUN rm -rf /var/lib/apt/lists/* \
 FROM base as release
 COPY --from=build /roomler /roomler
 
-RUN npm i -g pm2
+RUN yarn global add pm2
 ADD VERSION .
-VOLUME /roomler/ui/static/uploads
+VOLUME /roomler/packages/ui/static/uploads
 WORKDIR /roomler
 EXPOSE ${PORT}
 
 # Define the Run command
-CMD ["npm", "run", "start"]
+CMD ["yarn", "run", "start"]
 
